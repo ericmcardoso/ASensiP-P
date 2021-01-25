@@ -1,5 +1,3 @@
-import api from './../idbgraph'
-
 export default{
     state: {
         BarChart: {}, //FINAL DO BARCHART
@@ -75,21 +73,5 @@ export default{
         SET_TORNADOSYSTEM (state, sim){
             state.TornadoSystem = sim
         },
-    },
-    actions: {
-        async getBarChart ({ commit }) {
-            let bar = await api.getBarChart()
-            commit('SET_BARCHART', bar)
-        },
-        async getLineChart ({ commit}) {
-            let line = await api.getLineChart()
-            commit('SET_LINECHART', line)
-        },
-        async getTornadoSimulation ({ commit}) {
-            let tornado = await api.getTornadoSimulation()
-            commit('SET_TORNADOSIMULATION', tornado)
-        },
-        
-        
     }
 }

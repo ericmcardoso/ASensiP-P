@@ -1,4 +1,4 @@
-import api from './../store/idbgraph'
+import db from './../store/dexiedb'
 
 
 export const memoize = {
@@ -31,9 +31,11 @@ export const memoize = {
                         //altera o valor do parâmetro para a simulação
                         Simulation.simulationData.parameters[parameter] = controle
                         //busca na base de dados local a combinação
-                        let vIndicator = await api.getIndicatorParam(indicator, parameter, controle, type);
-
-                        if (!this.isEmpty(vIndicator)) {
+                        //let vIndicator = await api.getIndicatorParam(indicator, parameter, controle, type);
+                        let vIndicator = await db.searchData({"indicator": indicator, "parameter": parameter, "valueParameter": controle}, type)
+                        
+                        if (vIndicator != undefined) {
+                            //console.log("Encontrado "+vIndicator.valueindicator)
                             //PASSO 2: SE EXISTE O VALOR, RETORNA                            
                             console.log("Existe.. ")
                             this.valueIndicators.push(vIndicator.valueindicator)
@@ -55,9 +57,9 @@ export const memoize = {
                     for (var l = 1; l <= 3; l++) {
 
                         Simulation.simulationData.parameters[parameter] = controle //altera o valor do parâmetro para a simulação
-                        let vIndicator = api.getIndicatorParam(indicator, parameter, controle, type); //busca na base de dados local a combinação
-
-                        if (!this.isEmpty(vIndicator)) {
+                        let vIndicator = await db.searchData({"indicator": indicator, "parameter": parameter, "valueParameter": controle}, type)
+                        
+                        if (vIndicator != undefined) {
                             //PASSO 2: SE EXISTE O VALOR, RETORNA
                             console.log("Existe.. ")
                             this.valueIndicators.push(vIndicator.valueindicator)
@@ -97,7 +99,8 @@ export const memoize = {
             "valueParameter": value
         }
 
-        api.saveIndicatorParam(data, type)
+        //salva na Base de Dados
+        db.insertData(data, type)
 
         //DEVOLVE O VALOR DO INDICADOR PARA A COMBINAÇÃO
         return valueI

@@ -1,9 +1,11 @@
-import api from './../idb'
 import { memoize } from './../../helpers/Memoize';
 import { helpersimulation } from './../../helpers/HelpersSimulation';
+import  db  from './../dexiedb';
 
 export default {
   state: {
+    idSystem: 70,
+    dadosGerais: [],
     indicators: [], //lista de indicadores
     indicatorSelected: "", //indicador selecionado pelo usuário
     parameters: [], //lista de parâmetros
@@ -39,24 +41,51 @@ export default {
 
     SET_VALUEPARAMETERS(state, param) {
       state.valueParameters = param
+    },
+
+    SET_DADOS(state, param) {
+      state.dadosGerais = param
     }
 
   },
   actions: {
 
-    //BUSCA LISTA DE INDICADORES DE UM DETERMINADO SISTEMA
-    async getIndicators({ commit }) {
-      let indicators = await api.getIndicators()
-      commit('SET_INDICATORS', indicators)
-    },
-
     //BUSCA RELAÇÃO DE PARÂMETROS E INDICADORES
     async getParametersIndicator({ commit, state }) {
-      let parameters = await api.getParametersIndicator(state.indicatorSelected)
+      let parameters = []
+      let paramsDefault = []
+
+      let dados = state.dadosGerais.find( dados => dados.name === state.indicatorSelected );
+      if (dados.parameters.defaultParameters[0] != "(nenhum)") {
+        dados.parameters.defaultParameters.forEach(function (p) {
+          parameters.push(p);
+          paramsDefault.push(p);
+        });
+        dados.parameters.otherParameters.forEach(function (p) {
+          parameters.push(p);
+        });
+      }else{
+        dados.parameters.otherParameters.forEach(function (p) {
+          parameters.push(p);
+        });
+      }
       await commit('SET_PARAMETERS', parameters)
-      let paramsDefault = await api.getParamsDefault(state.indicatorSelected)
       await commit('SET_DEFAULT', paramsDefault)
       await commit('SET_SELECIONADO', paramsDefault)
+
+    },
+
+    //BUSCA LISTA DE INDICADORES DE UM DETERMINADO SISTEMA
+    async getIndicators({commit, state}){
+      let indicators = [];
+      let dados = await db.searchIndicators(state.idSystem)
+      //console.log(dados)
+      for(var i=0; i<dados.length; i++){
+        indicators.push(dados[i].name)
+        console.log(dados[i].name)
+      }
+      commit('SET_INDICATORS', indicators)
+      commit('SET_DADOS', dados)
     },
 
     //FUNÇÃO RESPONSÁVEL POR ANALISAR OS DADOS SELECIONADOS NO FORMULÁRIO,
@@ -69,7 +98,7 @@ export default {
 
       //resgata o JSON padrão da Simulação
       //é necessário mudar o ID da Simulação para um ID Real
-      let Simulation = await api.getSimulation("68ca096d-4702-496e-8284-fc5f827ecc7f");
+      let Simulation = await db.searchSimulation(state.idSystem);
 
       //caso o typo do formulário preenchido seja de Sistema
       if (form.type == "system") {
@@ -103,7 +132,6 @@ export default {
         } else {
 
           await helpersimulation.updateParameters(Simulation);
-          console.log("Parametro: " + state.pSelected)
           //chamada à função de cálculo da análise de sensibilidade com retorno dos valores para o indicador naquele parâmetro
           let valueIndicators = await memoize.calculation(Simulation, form.type, state.indicatorSelected, state.pSelected)
 
@@ -136,8 +164,7 @@ export default {
         let tornadoGraph = []; //array dos valores para o gráfico
 
         //resgata o JSON padrão da Simulação
-        //é necessário mudar o ID da Simulação
-        let Simulation = await api.getSimulation("68ca096d-4702-496e-8284-fc5f827ecc7f");
+        let Simulation = await db.searchSimulation(state.idSystem);
 
         //loop para todos os parâmetros selecionados
         for (i = 0; i < state.pSelected.length; i++) {

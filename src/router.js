@@ -13,7 +13,7 @@ import FormSistema from './components/forms/FormSistema'
 import FormHistograma from './components/forms/FormHistograma'
 import FormXY from './components/forms/FormXY'
 
-
+import Sistemas from './components/extra/Sistemas'
 
 Vue.use(Router)
 
@@ -43,7 +43,10 @@ export default new Router({
         path: '/formxy',
         component: FormXY
     },{
-        path: '/',
+        path: '/sis',
         component: Inicio
+    },{
+        path: '/',
+        component: Sistemas
     }]
 })

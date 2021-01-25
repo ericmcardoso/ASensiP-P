@@ -4,7 +4,7 @@
       <v-container>
         <v-row>
           <v-col cols="12">
-            <h1>Análise de Sensibilidade - Gráfico XY</h1>
+            <h1>Análise de Sensibilidade - Distribuição de Probabilidade (Histograma)</h1>
           </v-col>
         </v-row>
         <v-row>

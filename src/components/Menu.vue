@@ -4,7 +4,7 @@
     
 
     <v-toolbar-title class="white--text">Embrapa - Análise de Sensibilidade</v-toolbar-title>
-    <v-spacer></v-spacer>
+    <v-spacer></v-spacer><!-- <v-list>
      <v-toolbar-items >
       <v-menu offset-y>
         <template v-slot:activator="{ on }">
@@ -16,7 +16,7 @@
             Formulários
             </v-btn>
         </template>
-        <v-list>
+        
             <v-list-item
             v-for="(item, index) in items"
             :key="index"
@@ -24,12 +24,12 @@
             >
             <v-list-item-title><router-link class="lin" :to="{path: item.link}">{{ item.title }}</router-link></v-list-item-title>
             </v-list-item>
-        </v-list>
+        </v-list> 
         </v-menu>
 
        
         
-        </v-toolbar-items>
+        </v-toolbar-items>-->
       
      </v-toolbar>
   </div>
