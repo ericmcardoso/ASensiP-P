@@ -33,7 +33,7 @@ export const memoize = {
                         //busca na base de dados local a combinação
                         //let vIndicator = await api.getIndicatorParam(indicator, parameter, controle, type);
                         let vIndicator = await db.searchData({"indicator": indicator, "parameter": parameter, "valueParameter": controle}, type)
-                        
+                        //console.log(vIndicator)
                         if (vIndicator != undefined) {
                             //console.log("Encontrado "+vIndicator.valueindicator)
                             //PASSO 2: SE EXISTE O VALOR, RETORNA                            
@@ -43,7 +43,13 @@ export const memoize = {
                         } else {
                             //PASSO 3: SE NÃO EXISTE O VALOR, CHAMA A FUNÇAO DE CÁLCULO 
                             console.log("Calculando...")
-                            this.valueIndicators.push(this._calculate(Simulation, type, indicator, parameter, controle, j))
+                            //Simulation: JSON da Simulação
+                            //type: tipo do cálculo - system ou simulation
+                            //indicator: indicador analisado
+                            //parameter: parâmetro analisado
+                            //controle: valor do parâmetro na análise
+                            //j: número da interação
+                            this.valueIndicators.push(this._calculate(Simulation, type, indicator, parameter, controle))
                             controle += d; //incrementa o valor a ser analisado do parâmetro
                         }
 
@@ -66,7 +72,7 @@ export const memoize = {
                         } else {
                             //PASSO 3: SE NÃO EXISTE O VALOR, CHAMA A FUNÇAO DE CÁLCULO 
                             console.log("Calculando...")
-                            this.valueIndicators.push(this._calculate(Simulation, type, indicator, parameter, controle, l + 48))
+                            this.valueIndicators.push(this._calculate(Simulation, type, indicator, parameter, controle))
                         }
                         controle += d; //incrementa o valor a ser analisado do parâmetro
                     }
@@ -80,16 +86,28 @@ export const memoize = {
         }
 
     },
-    _calculate(pSimulation, type, indicator, parameter, value, temp) {
-        /* Falta definir esta função aqui, mas, basicamente, ela chama a função de cálculo de simulação adequadamente para o Indicador <indicator>
-        assumindo o valor <value> para o Parâmetro <parameter> e assumindo os valores da simulação ou o valor padrão do sistema para os demais Parâmetros, 
-        a depender se <type> é 'system' ou 'simulation'. */
+    _calculate(pSimulation, type, indicator, parameter, value) {
 
-        //ALTERA O VALOR DO PARÂMETRO NO JSON PADRÃO
-        pSimulation.simulationData.parameters[parameter] = value;
+        //std: Simulation.simulationData.systemParameters[parameter].std
+        let std = pSimulation.simulationData.systemParameters[parameter].std
+        //min: Simulation.simulationData.systemParameters[parameter].min
+        let min = pSimulation.simulationData.systemParameters[parameter].min
+        //max: Simulation.simulationData.systemParameters[parameter].max
+        let max = pSimulation.simulationData.systemParameters[parameter].max
+        //ystd: valor do indicador com todos os parâmetros no valor default
+        let ystd = 100
+        //sy: 1 se o indicador é bom e -1 se é ruim
+        let sy = 1
+        //vymin e vymax: constante entre 0 e 1 fixada para o parâmetro 
+        let vymin = 0.61010458
+        let vymax = 0.67944043
+        //ymin: valor do indicador para o valor mínimo do parâmetro
+        let ymin = ystd*(1 - sy * (vymin+0.5)*0.5)
+        //ymax: valor do indicador para o valor máximo do parâmetro
+        let ymax = ystd*(1 - sy * (vymax+0.5)*0.5)
+       
 
-        //CHAMADA A FUNÇÃO DE SIMULAÇÃO
-        let valueI = this.Simulation(pSimulation, temp)
+        let valueI = ystd*(value-min)*(value-max)/(std-min)/(std-max)+ymin*(value-std)*(value-max)/(min-std)/(min-max)+ymax*(value-std)*(value-min)/(max-std)/(max-min)
 
         let data = {
             "idSystem": pSimulation.idSystem,
@@ -107,18 +125,6 @@ export const memoize = {
 
     },
 
-    //FUNÇÃO PROPRIAMENTE DO SIMULADOR
-    //ESTA FUNÇÃO PRECISA SER REFEITA, POIS ESTÁ APENAS GERANDO QUALQUER NÚMERO ALEATÓRIO
-    Simulation(pSimulation, j) {
-
-        var valor = 0
-        if (j > 50)
-            valor = Math.floor(Math.random() * (132 - 120 + 1) + 132);
-        else
-            valor = Math.floor(Math.random() * (119 - 110 + 1) + 110);
-
-        return valor;
-    },
 
     calculeDistance(min, max) {
         return (max - min) / 100;

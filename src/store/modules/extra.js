@@ -1,15 +1,15 @@
 import db from './../dexiedb'
-import {helper} from './../../helpers/Helpers'
+//import {helper} from './../../helpers/Helpers'
 
 export default {
     state: {
-
+       
     },
     actions: {
         async searchSimulation({rootState}) {
 
             //deleta todas as bases de dados existentes
-            db.deleteAll();
+            await db.deleteAll();
             let relation = {}
             //Chamar método que vai criar instância com a Simulação
             switch (rootState.form.idSystem) {
@@ -17,24 +17,24 @@ export default {
                     //Insere os dados fictícios da Simulação
                     db.insertSimulation(sim70)
                     //Busca a lista de relações no Servidor
-                    relation = await helper.getrelation(sim70.idSystem)
+                    //relation = await helper.getrelation(sim70.idSystem)
                     break
                 case 72: //Modelo de Sistema2
                     db.insertSimulation(sim72)
-                    relation = await helper.getrelation(sim72.idSystem)
+                    //relation = await helper.getrelation(sim72.idSystem)
                     break
                 case 75: //Modelo de Sistema3
                     db.insertSimulation(sim75)
-                    relation = await helper.getrelation(sim75.idSystem)
+                    //relation = await helper.getrelation(sim75.idSystem)
                     break
                 default:
                     console.log("Erro na seleção da Simulação")
             }
             console.log(relation)
             //Chamar método que busca no Servidor tabela de relações para o sistema escolhido
-            for (var i = 0; i < relation.length; i++) {
-                db.insertRelationAll(relation[i])
-            }
+            // for (var i = 0; i < relation.length; i++) {
+            //     db.insertRelationAll(relation[i])
+            // }
 
             return true;
 
@@ -2454,7 +2454,52 @@ const sim70 = {
             "MACHOS": "BOVINOS"
         },
         "calculatedIndicators": null,
-        "indicatorsToCalculate": null
+        "indicatorsToCalculate": null,
+        "indicatorParameters": {	
+            "Lucratividade (R$/ha/ano)": 
+            {
+                "default" : [
+                    "PRENHEZ"
+                ],
+                "other" : [
+                    "CICLO",	
+                    "CONFINAMENTO",
+                    "DIAGNOSE",
+                    "INICIO_AGUAS",
+                    "PARTO_MACHO",
+                ],
+                    
+            },
+            "Receita Líquida Anual":
+            {
+                "other" : [
+                    "INICIO_AGUAS",
+                    "PARTO_MACHO",
+                    "PRENHEZ"
+                ],
+                "default" : [
+                    "NATALIDADE",
+                    "CICLO",	
+                    "DIAGNOSE"
+                ]
+            
+            },
+            "Toneladas de Carne Produzidas por Ano": 
+            {
+                "other" : [
+                    "CONFINAMENTO",	
+                    "DIAGNOSE",
+                    "INICIO_AGUAS",
+                    "MONTA",
+                    "AGUAS"
+                    ],
+                "default" : [
+                    "CICLO",
+                    "NATALIDADE",
+                    "PARTO_MACHO"
+                ]
+            }
+        }
     },
     "resultQuery": null,
 
@@ -4872,7 +4917,52 @@ const sim72 = {
             "MACHOS": "BOVINOS"
         },
         "calculatedIndicators": null,
-        "indicatorsToCalculate": null
+        "indicatorsToCalculate": null,
+        "indicatorParameters" : {	
+            "Lucratividade (R$/ha/ano)": 
+            {
+                "default" : [
+                        "PARTO_MACHO",
+                        "PRENHEZ"
+                ],
+                "other" : [
+                    "CICLO",	
+                    "CONFINAMENTO",
+                    "DIAGNOSE",
+                    "INICIO_AGUAS"
+                ],
+                    
+            },
+            "Receita Líquida Anual":
+            {
+                "other" : [
+                    "CICLO",	
+                    "DIAGNOSE",
+                    "INICIO_AGUAS",
+                    "PARTO_MACHO",
+                    "PRENHEZ"
+                ],
+                "default" : [
+                    "NATALIDADE",
+                ]
+            
+            },
+            "Toneladas de Carne Produzidas por Ano": 
+            {
+                "other" : [
+                    "CONFINAMENTO",	
+                    "DIAGNOSE",
+                    "INICIO_AGUAS",
+                    "MONTA"
+                    ],
+                "default" : [
+                    "CICLO",
+                    "NATALIDADE",
+                    "PARTO_MACHO",
+                    "AGUAS"
+                ]
+            }
+        }
     },
     "resultQuery": null,
 
@@ -7290,7 +7380,52 @@ const sim75 = {
             "MACHOS": "BOVINOS"
         },
         "calculatedIndicators": null,
-        "indicatorsToCalculate": null
+        "indicatorsToCalculate": null,
+        "indicatorParameters" : {	
+            "Lucratividade (R$/ha/ano)": 
+            {
+                "default" : [
+                    "PARTO_MACHO",
+                    "PRENHEZ"
+                ],
+                "other" : [
+                    "CICLO",	
+                    "CONFINAMENTO",
+                    "DIAGNOSE",
+                    "INICIO_AGUAS"
+                ],
+                    
+            },
+            "Receita Líquida Anual":
+            {
+                "other" : [
+                    "CICLO",	
+                    "DIAGNOSE",
+                    "INICIO_AGUAS",
+                    "PARTO_MACHO",
+                    "PRENHEZ",
+                    "NATALIDADE",
+                ],
+                "default" : [                    
+                ]
+            
+            },
+            "Toneladas de Carne Produzidas por Ano": 
+            {
+                "other" : [
+                    "CONFINAMENTO",	
+                    "DIAGNOSE",
+                    "INICIO_AGUAS",
+                    "MONTA",
+                    "CICLO",
+                    "NATALIDADE",
+                    ],
+                "default" : [
+                    "PARTO_MACHO",
+                    "AGUAS"
+                ]
+            }
+        }
     },
     "resultQuery": null,
 

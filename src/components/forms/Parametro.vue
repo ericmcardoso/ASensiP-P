@@ -110,6 +110,7 @@ export default {
       },
       pSelected: {
         get(){
+          
           return this.$store.state.form.pSelected
         },
         set(valor){
@@ -130,7 +131,7 @@ export default {
     watch: {
       selecionado: function () {
         this.habilitaCampo()
-        console.log("Entrei...")
+        
       },
       switch1(newValue){
         if(newValue){

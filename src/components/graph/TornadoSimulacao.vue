@@ -1,5 +1,6 @@
 <template>
     <div class="graph">
+        <Volta />
         <v-container>
             <v-row>
                 <v-col cols="12">
@@ -33,6 +34,15 @@
                 </v-col>
                 
                  <v-col cols="12" class="gr">
+                     <div class="text-center" v-if="!loaded">
+            <v-progress-circular
+              :size="70"
+              :width="7"
+              color="primary"
+              indeterminate
+            ></v-progress-circular>
+            <p>Calculando dados do Gráfico...</p>
+          </div>
                     <p id="example" ></p> 
                 </v-col>
             </v-row>
@@ -41,10 +51,11 @@
 </template>
 
 <script>
-
+import Volta from './../forms/VoltarForm'
 import * as d3 from 'd3';
 
 export default {  
+     components: {Volta},
     icons: {
         iconfont: 'mdiSvg', // 'mdi' || 'mdiSvg' || 'md' || 'fa' || 'fa4' || 'faSvg'
     },
@@ -60,10 +71,20 @@ export default {
     data: () => ({
         //parâmetros para seleção
         dialog: false,
+        loaded: true
     }),  
-    
+    mounted(){
+    //console.log("Aqui "+this.$store.getters.getindicatorSelected)
+    if(this.$store.getters.getindicatorSelected == ''){
+      this.$router.push({ path: '/formsimulacao' })
+    }else{
+      this.loaded = false
+    }
+      
+  },
     watch: {
     dadosInfo() {
+        this.loaded = true
       var chart = this.tornadoChart();
       d3.select("#example")
         .datum(this.dadosInfo["Gráfico de Tornado da Simulacao"])
@@ -138,7 +159,7 @@ export default {
                             return y(d.param) + (y.bandwidth() / 2);
                         })
                         .attr("dy", ".35em")
-                        .text(function (d) { return d.valueIndicator})
+                        .text(function (d) { return d.valueIndicator.toFixed(2)})
 
                     //TEXTO INTERNO REFERENTE AO PARÂMETRO
                     bar.enter().append('text')
@@ -152,7 +173,7 @@ export default {
                             return y(d.param) + (y.bandwidth() / 2);
                         })
                         .attr("dy", ".35em")
-                        .text(function (d) { return d.valueParam}) //colocar aqui os valore dos parâmetros
+                        .text(function (d) { return d.valueParam.toFixed(2)}) //colocar aqui os valore dos parâmetros
 
                     svg.append("g")
                     .attr("class", "x axis")
@@ -162,9 +183,7 @@ export default {
                     .attr("x", 6)
                     .attr("dx", ".71em")
                     .attr("transform", "translate(" + (x(eixoDefault) + 10) + ",40)") //POSICIONAMENTO DO EIXO CENTRAL
-                    .style("text-anchor", "end")
-                    .text("Lucratividade (R$/ha/ano) ")
-                    ;
+                    
 
                     //EIXO CENTRAL
                     svg.append("g")

@@ -54,38 +54,73 @@ export default {
     async getParametersIndicator({ commit, state }) {
       let parameters = []
       let paramsDefault = []
+      var parameter
 
-      let dados = state.dadosGerais.find( dados => dados.name === state.indicatorSelected );
-      if (dados.parameters.defaultParameters[0] != "(nenhum)") {
-        dados.parameters.defaultParameters.forEach(function (p) {
-          parameters.push(p);
-          paramsDefault.push(p);
-        });
-        dados.parameters.otherParameters.forEach(function (p) {
-          parameters.push(p);
-        });
-      }else{
-        dados.parameters.otherParameters.forEach(function (p) {
-          parameters.push(p);
-        });
-      }
+      //preenchimento dos parâmetros padrões
+      paramsDefault = (function() {
+        var i, len, ref, results;
+        ref = state.dadosGerais[state.indicatorSelected].default;
+        results = [];
+        for (i = 0, len = ref.length; i < len; i++) {
+          parameter = ref[i];
+          results.push(parameter);
+        }
+        return results;
+      })();
+
+     //preenchimento de todos os parâmetros      
+      parameters = (function() {
+        var i, len, ref, results;
+        ref = state.dadosGerais[state.indicatorSelected].other;
+        results = [];
+        for (i = 0, len = ref.length; i < len; i++) {
+          parameter = ref[i];
+          results.push(parameter);
+        }
+        ref = state.dadosGerais[state.indicatorSelected].default;
+        for (i = 0, len = ref.length; i < len; i++) {
+          parameter = ref[i];
+          results.push(parameter);
+        }
+        return results;
+      })();
+
       await commit('SET_PARAMETERS', parameters)
       await commit('SET_DEFAULT', paramsDefault)
       await commit('SET_SELECIONADO', paramsDefault)
+
+      // let dados = state.dadosGerais.find( dados => dados.name === state.indicatorSelected );
+      // if (dados.parameters.defaultParameters[0] != "(nenhum)") {
+      //   dados.parameters.defaultParameters.forEach(function (p) {
+      //     parameters.push(p);
+      //     paramsDefault.push(p);
+      //   });
+      //   dados.parameters.otherParameters.forEach(function (p) {
+      //     parameters.push(p);
+      //   });
+      // }else{
+      //   dados.parameters.otherParameters.forEach(function (p) {
+      //     parameters.push(p);
+      //   });
+      // }
 
     },
 
     //BUSCA LISTA DE INDICADORES DE UM DETERMINADO SISTEMA
     async getIndicators({commit, state}){
       let indicators = [];
+      //dados contém a simulação
       let dados = await db.searchIndicators(state.idSystem)
       //console.log(dados)
-      for(var i=0; i<dados.length; i++){
-        indicators.push(dados[i].name)
-        console.log(dados[i].name)
+      // for(var i=0; i<dados.length; i++){
+      //   indicators.push(dados[i].name)
+      //   console.log(dados[i].name)
+      // }
+      for(var prop in dados.simulationData.indicatorParameters){
+        indicators.push(prop)
       }
       commit('SET_INDICATORS', indicators)
-      commit('SET_DADOS', dados)
+      commit('SET_DADOS', dados.simulationData.indicatorParameters)
     },
 
     //FUNÇÃO RESPONSÁVEL POR ANALISAR OS DADOS SELECIONADOS NO FORMULÁRIO,
@@ -193,8 +228,8 @@ export default {
           let tornadoFinal = {}
           tornadoFinal = {
             "titleTornado": state.indicatorSelected + " - Sistema",
-            "default": 125, //Valor Padrão na Simulação
-            "defaultSystem": 120, //valor padrão para o Sistema
+            "default": 78, //Valor Padrão na Simulação
+            "defaultSystem": 100, //valor padrão para o Sistema
             "indicator": state.indicatorSelected,
             "parameters": state.pSelected,
             "dadosInfo": {
@@ -233,8 +268,8 @@ export default {
 
         tornadoFinal = {
           "titleTornado": state.indicatorSelected + " - Simulação",
-          "default": 125, //Valor Padrão na Simulação
-          "defaultSystem": 120, //valor padrão para o Sistema
+          "default": 100, //Valor Padrão na Simulação
+          "defaultSystem": 102, //valor padrão para o Sistema
           "indicator": state.indicatorSelected,
           "parameters": state.pSelected,
           "dadosInfo": {

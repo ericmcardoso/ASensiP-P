@@ -1,5 +1,6 @@
 <template>
   <div class="graph">
+    <Volta />
     <v-container>
       <v-row>
         <v-col cols="12">
@@ -35,6 +36,16 @@
         </v-col>
 
         <v-col cols="12" class="gr">
+          <div class="text-center" v-if="!loaded">
+            <v-progress-circular
+              :size="70"
+              :width="7"
+              color="primary"
+              indeterminate
+            ></v-progress-circular>
+            <p>Calculando dados do Gráfico...</p>
+          </div>
+          
           <p id="example"></p>
         </v-col>
       </v-row>
@@ -43,9 +54,11 @@
 </template>
 
 <script>
+import Volta from './../forms/VoltarForm'
 import * as d3 from "d3";
 
 export default {
+   components: {Volta},
   icons: {
     iconfont: "mdiSvg", // 'mdi' || 'mdiSvg' || 'md' || 'fa' || 'fa4' || 'faSvg'
   },
@@ -62,9 +75,20 @@ export default {
   data: () => ({
     //parâmetros para seleção
     dialog: false,
+    loaded: true
   }),
+  mounted(){
+    //console.log("Aqui "+this.$store.getters.getindicatorSelected)
+    if(this.$store.getters.getindicatorSelected == ''){
+      this.$router.push({ path: '/formsistema' })
+    }else{
+      this.loaded = false
+    }
+      
+  },
   watch: {
     dadosInfo() {
+      this.loaded = true
       var chart = this.tornadoChart();
       d3.select("#example")
         .datum(this.dadosInfo["Gráfico de Tornado do Sistema"])
@@ -100,11 +124,14 @@ export default {
 
       //Resgatando todos os dados do JSON
       var eixoDefault = this.$store.getters.getIndicatorSystem;
+      
       var eixoSimulation = this.$store.getters.getIndicatorSimulation;
       var title = this.$store.state.graph.TornadoSystem.indicator;
-
+      //console.log(eixoDefault + " " + eixoSimulation)
       function chart(selection) {
         selection.each(function (dataInfo) {
+
+          //console.log(dataInfo)
           x.domain(
             d3.extent(dataInfo, function (d) {
               //console.log(d.valueIndicator)
@@ -113,12 +140,13 @@ export default {
           ); //RETORNA OS VALORES PARA X
           y.domain(
             dataInfo.map(function (d) {
+              //console.log(d.param)
               return d.param;
             })
           ); //RETORNA OS ELEMENTOS DO EIXO Y
 
           yAxis.tickPadding(x(eixoDefault) + 20); //POSICIONAMENTO DA ESCALA VERTICAL
-
+    
           var bar = svg.selectAll(".bar").data(dataInfo);
 
           // //POSICIONAMENTO DAS BARRAS
@@ -126,15 +154,19 @@ export default {
             .enter()
             .append("rect")
             .attr("class", function (d) {
-             return "bar bar--" + (d.valueIndicator < eixoDefault ? (d.valueIndicator < eixoDefault && d.variation == "min" ? "negative" : "extra") : (d.valueIndicator < eixoDefault && d.variation == "min" ? "extra" :"positive"));
+             return "bar bar--" +  (d.valueIndicator < eixoDefault ? "negative" : "positive");
             }) //VERIFICA SE O ELEMENTO É DA ESQUERDA OU DIREITA DO EIXO
             .attr("x", function (d) {
+              // console.log("Default " + eixoDefault)
+              // console.log("Indicador " + d.valueIndicator)
+              // console.log(Math.min(eixoDefault, d.valueIndicator))
               return x(Math.min(eixoDefault, d.valueIndicator));
             })
             .attr("y", function (d) {
               return y(d.param);
             })
             .attr("width", function (d) {
+              
               return Math.abs(x(d.valueIndicator) - x(eixoDefault));
             }) //ONDE COMEÇA A DIVISÃO CENTRAL (EIXO)
             .attr("height", y.bandwidth())
@@ -176,7 +208,7 @@ export default {
             })
             .attr("dy", ".35em")
             .text(function (d) {
-              return d.valueIndicator;
+              return d.valueIndicator.toFixed(2);
             });
 
           //TEXTO INTERNO REFERENTE AO PARÂMETRO

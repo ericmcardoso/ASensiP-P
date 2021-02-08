@@ -84,7 +84,7 @@ export default {
     watch: {
       selecionado: function () {
         this.habilitaCampo()
-        console.log("Entrei...")
+        //console.log("Entrei...")
       },
       
     },

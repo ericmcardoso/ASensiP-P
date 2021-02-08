@@ -1,16 +1,7 @@
 <template>
   <div class="inicio">
     <v-container fluid>
-      <v-row class="text-right">
-          <v-btn
-            class="ma-2"
-            outlined
-            color="indigo"
-            v-on:click="volta"
-            >
-            Escolher um novo Sistema
-            </v-btn>
-      </v-row>
+      <Volta />
       <v-row dense>
         <v-col
           v-for="card in cards"
@@ -44,20 +35,21 @@
 </template>
 
 <script>
+import Volta from './forms/VoltarSistema.vue'
 import { mapActions } from 'vuex'
 export default {
-    
+    components: {Volta},
     data: () => ({
       cards: [
-        { title: 'Gráfico de Tornado do Sistema', src: 'https://cdn.vuetifyjs.com/images/parallax/material2.jpg', flex: 6, id: 1 },
-        { title: 'Gráfico de Tornado da Simulação', src: 'https://cdn.vuetifyjs.com/images/parallax/material2.jpg', flex: 6, id: 2 },
-        { title: 'Gráfico Indicador x Parâmetro (XY)', src: 'https://cdn.vuetifyjs.com/images/parallax/material2.jpg', flex: 6, id: 3 },
-        { title: 'Gráfico de Probabilidade (Histograma)', src: 'https://cdn.vuetifyjs.com/images/parallax/material2.jpg', flex: 6, id: 4 }
+        { title: 'Gráfico de Tornado do Sistema', src: 'https://www.geracaoemacao.com.br/img2.jpg', flex: 6, id: 1 },
+        { title: 'Gráfico de Tornado da Simulação', src: 'https://www.geracaoemacao.com.br/img1.JPG', flex: 6, id: 2 },
+        { title: 'Gráfico Indicador x Parâmetro (XY)', src: 'https://www.geracaoemacao.com.br/img3.JPG', flex: 6, id: 3 },
+        { title: 'Gráfico de Probabilidade (Histograma)', src: 'https://www.geracaoemacao.com.br/img4.JPG', flex: 6, id: 4 }
       ],
     }),
     methods: {    
         ...mapActions(['searchSimulation']),
-        async simula(value) {
+        simula(value) {
             //seta o valor do Sistema na store
             switch(value){
                 case 1:
@@ -76,9 +68,7 @@ export default {
             }
            
         },
-        volta(){
-             this.$router.push({ path: '/' })
-        }
+        
     }
 };
 </script>

@@ -1,5 +1,6 @@
 <template>
   <div class="graph">
+    <Volta />
     <v-container>
       <v-row>
         <v-col cols="12">
@@ -10,6 +11,15 @@
           <h3>{{ titleBar }}</h3>
         </v-col>
         <v-col cols="12" class="gr">
+          <div class="text-center" v-if="!loaded">
+            <v-progress-circular
+              :size="70"
+              :width="7"
+              color="primary"
+              indeterminate
+            ></v-progress-circular>
+            <p>Calculando dados do Gráfico...</p>
+          </div>
           <div id="chart-container"></div>
         </v-col>
       </v-row>
@@ -18,9 +28,11 @@
 </template>
 
 <script>
+import Volta from './../forms/VoltarForm'
 import * as d3 from "d3";
 
 export default {
+   components: {Volta},
   computed: {
     dados() {
       return this.$store.getters.getDadosBar;
@@ -29,8 +41,21 @@ export default {
       return this.$store.getters.getTitleBar;
     },
   },
+  data: () => ({
+    loaded: true
+  }),
+  mounted(){
+    //console.log("Aqui "+this.$store.getters.getindicatorSelected)
+    if(this.$store.getters.getindicatorSelected == ''){
+      this.$router.push({ path: '/formhistograma' })
+    }else{
+      this.loaded = false
+    }
+      
+  },
   watch: {
     dados() {
+      this.loaded = true
       this.createChart();
     },
   },

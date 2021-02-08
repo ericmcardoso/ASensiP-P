@@ -1,5 +1,6 @@
 <template>
   <div class="rotulo">
+    <Volta />
     <v-form @submit.prevent="onSubmit" id="check-login-form">
       <v-container>
         <v-row>
@@ -35,10 +36,11 @@
 <script>
 import Indicador from './Indicador.vue'
 import Parametro from './Parametro.vue'
+import Volta from './VoltarForm.vue'
 import { mapActions } from 'vuex'
 
 export default {
-  components: {Indicador, Parametro},
+  components: {Indicador, Parametro, Volta},
   computed: {
     indicadores(){
       return this.$store.state.form.indicators

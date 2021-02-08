@@ -8,7 +8,7 @@ const db_name1 = "IndicatorParameter"
 const db_name2 = "Simulation"
 const db_name3 = "RelationDB"
 
-const db_version = 12
+const db_version = 1
 
 export default {
 
@@ -44,7 +44,7 @@ export default {
                 break;
 
         }
-
+        
         db.open().catch(function (err) {
             console.error('Failed to open db: ' + (err.stack || err));
         });
@@ -57,19 +57,11 @@ export default {
 
     async deleteAll() {
         await Dexie.getDatabaseNames(function (names) {
-            console.log('database names: ', names);
             names.forEach(async function (name) {
-                var db = await new Dexie(name).open();
-                db.close()
-                const newDb = new Dexie(db.name);
-   
-                newDb.on('blocked', ()=>false); // Silence console warning of blocked event.
-                
-                if (db.tables.length === 0) {
-                    await db.delete();
-                }
+              var db = new Dexie(name);
+              await db.delete()
             });
-        });
+          });
     },
 
     //funções relacionadas a persistencia dos calculos
@@ -136,17 +128,30 @@ export default {
     },
 
     async searchIndicators(System) {
-        let db = this.connect(3)
-        let v = []
-        await db.transaction('r', db.Relationship, function () {
-            return db.Relationship.where({
+
+        let db = this.connect(2)
+        let v = await db.transaction('r', db.Simulation, function () {
+            return db.Simulation.where({
                 idSystem: System
-            }).each(dados => v.push(dados))
+            }).first()
         }).catch(function (e) {
             console.error("Erro na transação " + e.stack);
         });
 
         return v
+
+        //IMPLEMENTAÇÃO COM RELATIONSHIP SEPARADO
+        // let db = this.connect(3)
+        // let v = []
+        // await db.transaction('r', db.Relationship, function () {
+        //     return db.Relationship.where({
+        //         idSystem: System
+        //     }).each(dados => v.push(dados))
+        // }).catch(function (e) {
+        //     console.error("Erro na transação " + e.stack);
+        // });
+
+        // return v
 
     },
 
