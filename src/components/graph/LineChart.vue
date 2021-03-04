@@ -28,7 +28,7 @@
 </template>
 
 <script>
-import Volta from './../forms/VoltarForm'
+import Volta from './../forms/BackForm'
 import * as d3 from "d3";
 
 export default {
@@ -51,13 +51,11 @@ export default {
     loaded: true
   }),
   mounted(){
-    //console.log("Aqui "+this.$store.getters.getindicatorSelected)
     if(this.$store.getters.getindicatorSelected == ''){
       this.$router.push({ path: '/formxy' })
     }else{
       this.loaded = false
-    }
-      
+    }      
   },
   watch: {
     dados() {
@@ -68,8 +66,12 @@ export default {
   methods: {
     createChart() {
       var margin = { top: 20, right: 30, bottom: 40, left: 20 }, //ESPAÇAMENTO DO GRÁFICO
-        width = 1100 - margin.left - margin.right,
+
+        width = document.getElementById('chart-container').offsetWidth - margin.left - margin.right,
+        //width = 1100 - margin.left - margin.right,
         height = 470 - margin.top - margin.bottom;
+
+        console.log(width)
       var tooltip = d3.select("body").append("div").attr("class", "toolTip");
 
       const svg = d3
@@ -88,11 +90,13 @@ export default {
         })
       );
       const x = d3
-        .scaleBand()
-        .domain(
-          this.dados.map(function (d) {
+        .scaleLinear()
+        .domain([
+          inicioX,
+          d3.max(this.dados, function (d) {
             return d.xField;
           })
+        ]          
         )
         .range([inicioX, width]);
 
@@ -153,44 +157,33 @@ export default {
             })
         );
 
-      // Add pontos
+      // Adicionando pontos
       chart
-        .selectAll("pontos")
-        .data(this.dados)
-        .enter()
-        .append("circle")
-        .attr("class", "pontos")
-        //.attr("fill", "white")
-        .attr("stroke", "none")
-        .attr("cx", function (d) {
-          return x(d.xField);
-        })
-        .attr("cy", function (d) {
-          return y(d.yField);
-        })
+        .selectAll("pontos").data(this.dados).enter().append("circle").attr("class", "pontos")
+        .attr("stroke", "none").attr("cx", function (d) { return x(d.xField); })
+        .attr("cy", function (d) { return y(d.yField); })
         .attr("r", 3)
         .on("mousemove", function (d) {
-          //ADICIONANDO TOOLTIP COM INFORMAÇÕES DA BARRA
           tooltip
             .style("left", d3.event.pageX - 50 + "px")
             .style("top", d3.event.pageY - 70 + "px")
             .style("display", "inline-block")
-            .html(d.yField + " | " + d.xField);
+            .html(Number(d.yField).toFixed(2) + " | " + Number(d.xField).toFixed(2));
         })
         .on("mouseout", function () {
           tooltip.style("display", "none");
-        }); //REMOVENDO TOOLTIP
+        });
 
       var eixSysx = this.eixoSystem[0];
       var eixSysy = this.eixoSystem[1];
+
       chart
         .append("circle")
-        .attr("cx", y(eixSysx))
+        .attr("cx", x(eixSysx))
         .attr("cy", y(this.eixoSystem[1]))
         .attr("r", 6)
         .style("fill", "#FF0000")
         .on("mousemove", function () {
-          //ADICIONANDO TOOLTIP COM INFORMAÇÕES DA BARRA
           tooltip
             .style("left", d3.event.pageX - 50 + "px")
             .style("top", d3.event.pageY - 70 + "px")
@@ -202,9 +195,10 @@ export default {
         .on("mouseout", function () {
           tooltip.style("display", "none");
         });
+
       chart
         .append("text")
-        .attr("x", y(this.eixoSystem[0]) - 20)
+        .attr("x", x(eixSysx) - 20)
         .attr("y", y(this.eixoSystem[1]) + 20)
         .text(this.eixoSystem[1] + " | " + this.eixoSystem[0])
         .style("font", "10px sans-serif")
@@ -212,10 +206,14 @@ export default {
 
       var eixSimx = this.eixoSimulation[0];
       var eixSimy = this.eixoSimulation[1];
-      // //PADRÃO DA SIMULAÇÃO
+      
+
+     
+
+      //PADRÃO DA SIMULAÇÃO
       chart
         .append("circle")
-        .attr("cx", y(this.eixoSimulation[0]))
+        .attr("cx", x(eixSimx))
         .attr("cy", y(this.eixoSimulation[1]))
         .attr("r", 6)
         .style("fill", "#00FF00")
@@ -235,7 +233,7 @@ export default {
 
       chart
         .append("text")
-        .attr("x", y(this.eixoSimulation[0]) - 20)
+        .attr("x",  x(eixSimx) - 20)
         .attr("y", y(this.eixoSimulation[1]) - 20)
         .text(this.eixoSimulation[1] + " | " + this.eixoSimulation[0])
         .style("font", "10px sans-serif")

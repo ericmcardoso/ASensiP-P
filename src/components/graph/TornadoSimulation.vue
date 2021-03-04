@@ -51,7 +51,7 @@
 </template>
 
 <script>
-import Volta from './../forms/VoltarForm'
+import Volta from './../forms/BackForm'
 import * as d3 from 'd3';
 
 export default {  
@@ -74,7 +74,6 @@ export default {
         loaded: true
     }),  
     mounted(){
-    //console.log("Aqui "+this.$store.getters.getindicatorSelected)
     if(this.$store.getters.getindicatorSelected == ''){
       this.$router.push({ path: '/formsimulacao' })
     }else{
@@ -94,7 +93,7 @@ export default {
    methods: {
        tornadoChart() {
             var margin = {top: 20, right: 30, bottom: 40, left: 100}, //ESPAÇAMENTO DO GRÁFICO
-            width = 800 - margin.left - margin.right,
+           width = document.getElementById('example').offsetWidth - margin.left - margin.right - 40,
             height = 200 - margin.top - margin.bottom;
 
             
@@ -103,15 +102,13 @@ export default {
             var tooltip = d3.select("body").append("div").attr("class", "toolTip");
 
             var xAxis = d3.axisBottom(x).tickFormat(d3.format(".2f"));
-            //console.log("X "+ xAxis );
             var yAxis = d3.axisLeft(y); //LEGENDA DO EIXO Y (PRECISO AJUSTAR)
-            //console.log("Y "+ yAxis );
 
             var svg = d3.select(".gr").append("svg")
                 .attr("width", (width+350) + margin.left + margin.right) //ANEXANDO LARGURA À PÁGINA HTML
                 .attr("height", (height+200) + margin.top + margin.bottom) //ANEXANDO ALTURA À PÁGINA INICIAL
                 .append("g")
-                .attr("transform", "translate(" + (margin.left + 80) + "," + 0 + ")"); //POSICIONAMENTO DO ELEMENTO NA TELA
+                .attr("transform", "translate(" + (margin.left + 40) + "," + 0 + ")"); //POSICIONAMENTO DO ELEMENTO NA TELA
             
              //Resgatando todos os dados do JSON
             var eixoDefault = this.$store.getters.getIndicatorSimulation2;
@@ -119,21 +116,19 @@ export default {
             var title = this.$store.state.graph.TornadoSimulation.indicator;
 
             function chart(selection) {
-                //var title = this.titleTornado
                 
                 selection.each(function(dataInfo) {
                 
                     x.domain(d3.extent(dataInfo, function(d) { return d.valueIndicator; })); //RETORNA OS VALORES PARA X
                     y.domain(dataInfo.map(function(d) { return d.param; })); //RETORNA OS ELEMENTOS DO EIXO Y
                     
-                    //var minvalueIndicator = Math.min.apply(Math, dataInfo.map(function(d){return d.valueIndicator;}))
-                    yAxis.tickPadding(x(eixoDefault) + 20); //POSICIONAMENTO DA ESCALA VERTICAL
+                    yAxis.tickPadding(x(eixoDefault) + 40); //POSICIONAMENTO DA ESCALA VERTICAL
                     var bar = svg.selectAll(".bar")
                              .data(dataInfo)
                    
                     // //POSICIONAMENTO DAS BARRAS
                     bar.enter().append("rect")
-                        .attr("class", function(d) { return "bar bar--" + (d.valueIndicator < eixoDefault ? (d.valueIndicator < eixoDefault ? "negative" : "extra") : (d.valueIndicator < eixoDefault ? "extra" :"positive")); }) //VERIFICA SE O ELEMENTO É DA ESQUERDA OU DIREITA DO EIXO
+                        .attr("class", function(d) { return "bar bar--" + (d.valueIndicator < eixoDefault ? (d.variation === "min" ? "negative" : "extra") : (d.variation === "min" ? "extra" :"positive")); }) //VERIFICA SE O ELEMENTO É DA ESQUERDA OU DIREITA DO EIXO
                         .attr("x", function(d) { return x(Math.min(eixoDefault, d.valueIndicator)); })
                         .attr("y", function(d) { return y(d.param); })
                         .attr("width", function(d) { return Math.abs(x(d.valueIndicator) - x(eixoDefault)); }) //ONDE COMEÇA A DIVISÃO CENTRAL (EIXO)
@@ -143,7 +138,7 @@ export default {
                             .style("left", d3.event.pageX - 50 + "px")
                             .style("top", d3.event.pageY - 70 + "px")
                             .style("display", "inline-block")
-                            .html((title + ": " + d.valueIndicator) + "<br>" + (d.param) + ": "+ (d.valueParam));
+                            .html((title + ": " + d.valueIndicator.toFixed(2)) + "<br>" + (d.param) + ": "+ (d.valueParam.toFixed(2)));
                         })
                         .on("mouseout", function(){ tooltip.style("display", "none");}); //REMOVENDO TOOLTIP
 
@@ -152,7 +147,7 @@ export default {
                         .attr("text-anchor", "middle")
                         .attr("x", function(d) {
                             //VERIFICA SE É BARRA DA ESQUERDA OU DIREITA PARA POSICIONAR O RÓTULO
-                            return d.valueIndicator < eixoDefault ? x(d.valueIndicator) - 10 : x(Math.min(0, d.valueIndicator)) +(Math.abs(x(d.valueIndicator) - x(0)) +10);
+                            return d.valueIndicator < eixoDefault ? x(d.valueIndicator) - 20 : x(Math.min(0, d.valueIndicator)) +(Math.abs(x(d.valueIndicator) - x(0)) +20);
                         })
                         .attr("y", function(d) {
                             //console.log(y(d.param) + (y.bandwidth() / 2));
@@ -167,7 +162,7 @@ export default {
                         .attr("class", "text-int")
                         .attr("x", function(d) {
                             //VERIFICA SE É BARRA DA ESQUERDA OU DIREITA PARA POSICIONAR O RÓTULO
-                            return d.valueIndicator < eixoDefault ? x(d.valueIndicator) + 15 : x(Math.min(0, d.valueIndicator)) +(Math.abs(x(d.valueIndicator) - x(0)) -15);
+                            return d.valueIndicator < eixoDefault ? x(d.valueIndicator) + 20 : x(Math.min(0, d.valueIndicator)) +(Math.abs(x(d.valueIndicator) - x(0)) -20);
                         })
                         .attr("y", function(d) {
                             return y(d.param) + (y.bandwidth() / 2);
@@ -208,9 +203,6 @@ export default {
                     
                     //EIXO AUXILIAR (VALOR PADRÃO)
                     svg.append("g")
-                        //.attr("class", "y axis")
-                        //.attr("transform", "translate(" + x(126) + ",0)") //POSICIONAMENTO DO EIXO CENTRAL
-                        //.call(yAxis)
                         .append("line") //anexando uma linha
                         .attr('class','lineextra')
                         .attr("stroke", "red") //COR DA LINHA

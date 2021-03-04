@@ -28,7 +28,7 @@
 </template>
 
 <script>
-import Volta from './../forms/VoltarForm'
+import Volta from './../forms/BackForm'
 import * as d3 from "d3";
 
 export default {
@@ -45,7 +45,6 @@ export default {
     loaded: true
   }),
   mounted(){
-    //console.log("Aqui "+this.$store.getters.getindicatorSelected)
     if(this.$store.getters.getindicatorSelected == ''){
       this.$router.push({ path: '/formhistograma' })
     }else{
@@ -63,7 +62,7 @@ export default {
     createChart() {
 
       var margin = { top: 20, right: 30, bottom: 40, left: 20 }, //ESPAÇAMENTO DO GRÁFICO
-        width = 1100 - margin.left - margin.right,
+        width = document.getElementById('chart-container').offsetWidth - margin.left - margin.right,
         height = 420 - margin.top - margin.bottom;
 
       var legendX = this.$store.state.graph.BarChart.legendXBar;
@@ -94,7 +93,7 @@ export default {
       const yAxis = d3
         .scaleLinear()
         .range([height, 0])
-        .domain([0, teste[1] + 1]);
+        .domain([0, teste[1] + 5]);
 
       chart.append("g").call(d3.axisLeft(yAxis));
 

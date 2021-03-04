@@ -1,4 +1,5 @@
 import db from './../store/dexiedb'
+import {dataPseudo} from './dataPseudo'
 
 
 export const memoize = {
@@ -17,19 +18,13 @@ export const memoize = {
                 let max = Simulation.simulationData.systemParameters[parameter].max
 
                 let d = this.calculeDistance(min, max)
-
-
                 if (type == 'system') { //100 PONTOS DO MINIMO AO MÁXIMO
                     
                     //controle corresponde ao valor modificado do parâmetro analisado
                     //d corresponde à 1% da diferença entre o mínimo e o máximo do parâmetro
                     let controle = min;
-
                     //Invoca a função de Simulação 100 vezes para analisar o menor e maior valor
-                    for (var j = 0; j <= 100; j++) {
-
-                        //altera o valor do parâmetro para a simulação
-                        Simulation.simulationData.parameters[parameter] = controle
+                    for (var j = 0; j < 100; j++) {
                         //busca na base de dados local a combinação
                         //let vIndicator = await api.getIndicatorParam(indicator, parameter, controle, type);
                         let vIndicator = await db.searchData({"indicator": indicator, "parameter": parameter, "valueParameter": controle}, type)
@@ -88,25 +83,15 @@ export const memoize = {
     },
     _calculate(pSimulation, type, indicator, parameter, value) {
 
-        //std: Simulation.simulationData.systemParameters[parameter].std
         let std = pSimulation.simulationData.systemParameters[parameter].std
-        //min: Simulation.simulationData.systemParameters[parameter].min
         let min = pSimulation.simulationData.systemParameters[parameter].min
-        //max: Simulation.simulationData.systemParameters[parameter].max
         let max = pSimulation.simulationData.systemParameters[parameter].max
-        //ystd: valor do indicador com todos os parâmetros no valor default
-        let ystd = 100
-        //sy: 1 se o indicador é bom e -1 se é ruim
-        let sy = 1
-        //vymin e vymax: constante entre 0 e 1 fixada para o parâmetro 
-        let vymin = 0.61010458
-        let vymax = 0.67944043
-        //ymin: valor do indicador para o valor mínimo do parâmetro
-        let ymin = ystd*(1 - sy * (vymin+0.5)*0.5)
-        //ymax: valor do indicador para o valor máximo do parâmetro
-        let ymax = ystd*(1 - sy * (vymax+0.5)*0.5)
+        let vymin = dataPseudo[indicator].vymin
+        let vymax = dataPseudo[indicator].vymax
+        let ystd = (type == "system" ? dataPseudo[indicator].system : dataPseudo[indicator].simulation)
+        let ymin = ystd*(1 + (vymin-0.5))
+        let ymax = ystd*(1 + (vymax-0.5))
        
-
         let valueI = ystd*(value-min)*(value-max)/(std-min)/(std-max)+ymin*(value-std)*(value-max)/(min-std)/(min-max)+ymax*(value-std)*(value-min)/(max-std)/(max-min)
 
         let data = {
@@ -119,7 +104,6 @@ export const memoize = {
 
         //salva na Base de Dados
         db.insertData(data, type)
-
         //DEVOLVE O VALOR DO INDICADOR PARA A COMBINAÇÃO
         return valueI
 
@@ -128,10 +112,6 @@ export const memoize = {
 
     calculeDistance(min, max) {
         return (max - min) / 100;
-    },
-
-    isEmpty(obj) {
-        return Object.keys(obj).length === 0;
     }
 
 

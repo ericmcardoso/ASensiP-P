@@ -15,7 +15,7 @@
           </v-col>
           <v-col cols="12">
             <!-- COMPONENTE PARA SELEÇÃO DO INDICADOR -->
-            <Indicador :indicadores="indicadores" />
+            <Indicador :indicadores="indicadores"/>
           </v-col>
           <v-col cols="12">
             <h3>Parâmetros</h3>
@@ -34,9 +34,9 @@
 </template>
 
 <script>
-import Indicador from './Indicador.vue'
-import Parametro from './ParametroUnico.vue'
-import Volta from './VoltarForm.vue'
+import Indicador from './Indicator.vue'
+import Parametro from './UniqueParameter.vue'
+import Volta from './BackForm.vue'
 import { mapActions } from 'vuex'
 
 export default {
@@ -49,6 +49,7 @@ export default {
   },
   created () {
      this.getIndicators()
+     this.$store.commit("SET_BARCHART", "")
   },
   data() {
     return {

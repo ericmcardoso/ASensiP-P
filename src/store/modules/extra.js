@@ -1,5 +1,5 @@
 import db from './../dexiedb'
-//import {helper} from './../../helpers/Helpers'
+//import {helper} from './../../helpers/Backend'
 
 export default {
     state: {
@@ -10,7 +10,6 @@ export default {
 
             //deleta todas as bases de dados existentes
             await db.deleteAll();
-            let relation = {}
             //Chamar método que vai criar instância com a Simulação
             switch (rootState.form.idSystem) {
                 case 70: //Modelo de Sistema1
@@ -30,12 +29,6 @@ export default {
                 default:
                     console.log("Erro na seleção da Simulação")
             }
-            console.log(relation)
-            //Chamar método que busca no Servidor tabela de relações para o sistema escolhido
-            // for (var i = 0; i < relation.length; i++) {
-            //     db.insertRelationAll(relation[i])
-            // }
-
             return true;
 
         }

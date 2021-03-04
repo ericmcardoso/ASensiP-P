@@ -16,7 +16,6 @@
                 aspect-ratio="2"
                 contain
               ></v-img>
-             
             </v-card>
           </v-dialog>
         </v-col>
@@ -45,7 +44,7 @@
             ></v-progress-circular>
             <p>Calculando dados do Gráfico...</p>
           </div>
-          
+
           <p id="example"></p>
         </v-col>
       </v-row>
@@ -54,41 +53,39 @@
 </template>
 
 <script>
-import Volta from './../forms/VoltarForm'
+import Volta from "./../forms/BackForm";
 import * as d3 from "d3";
 
 export default {
-   components: {Volta},
+  components: { Volta },
   icons: {
     iconfont: "mdiSvg", // 'mdi' || 'mdiSvg' || 'md' || 'fa' || 'fa4' || 'faSvg'
   },
-  
+
   computed: {
     dadosInfo() {
       return this.$store.getters.getDadosInfo;
     },
-    titleTornado() {      
+    titleTornado() {
       return this.$store.getters.getTitleTornado;
-
     },
   },
   data: () => ({
     //parâmetros para seleção
     dialog: false,
-    loaded: true
+    loaded: true,
   }),
-  mounted(){
+  mounted() {
     //console.log("Aqui "+this.$store.getters.getindicatorSelected)
-    if(this.$store.getters.getindicatorSelected == ''){
-      this.$router.push({ path: '/formsistema' })
-    }else{
-      this.loaded = false
+    if (this.$store.getters.getindicatorSelected == "") {
+      this.$router.push({ path: "/formsistema" });
+    } else {
+      this.loaded = false;
     }
-      
   },
   watch: {
     dadosInfo() {
-      this.loaded = true
+      this.loaded = true;
       var chart = this.tornadoChart();
       d3.select("#example")
         .datum(this.dadosInfo["Gráfico de Tornado do Sistema"])
@@ -98,11 +95,11 @@ export default {
 
   methods: {
     isEmpty(obj) {
-        return Object.keys(obj).length === 0;
+      return Object.keys(obj).length === 0;
     },
     tornadoChart() {
       var margin = { top: 20, right: 30, bottom: 40, left: 100 }, //ESPAÇAMENTO DO GRÁFICO
-        width = 800 - margin.left - margin.right,
+         width = document.getElementById('example').offsetWidth - margin.left - margin.right - 40,
         height = 200 - margin.top - margin.bottom;
 
       var x = d3.scaleLinear().rangeRound([0, width]); //ESCALA NO EIXO X
@@ -110,9 +107,7 @@ export default {
       var tooltip = d3.select("body").append("div").attr("class", "toolTip");
 
       var xAxis = d3.axisBottom(x).tickFormat(d3.format(".2f"));
-      //console.log("X "+ xAxis );
       var yAxis = d3.axisLeft(y); //LEGENDA DO EIXO Y (PRECISO AJUSTAR)
-      //console.log("Y "+ yAxis );
 
       var svg = d3
         .select(".gr")
@@ -120,163 +115,90 @@ export default {
         .attr("width", width + 120 + margin.left + margin.right) //ANEXANDO LARGURA À PÁGINA HTML
         .attr("height", height + margin.top + margin.bottom) //ANEXANDO ALTURA À PÁGINA INICIAL
         .append("g")
-        .attr("transform", "translate(" + (margin.left + 80) + "," + 0 + ")"); //POSICIONAMENTO DO ELEMENTO NA TELA
+        .attr("transform", "translate(" + (margin.left + 40) + "," + 0 + ")"); //POSICIONAMENTO DO ELEMENTO NA TELA
 
       //Resgatando todos os dados do JSON
       var eixoDefault = this.$store.getters.getIndicatorSystem;
-      
       var eixoSimulation = this.$store.getters.getIndicatorSimulation;
       var title = this.$store.state.graph.TornadoSystem.indicator;
-      //console.log(eixoDefault + " " + eixoSimulation)
+
       function chart(selection) {
         selection.each(function (dataInfo) {
+          x.domain(d3.extent(dataInfo, function (d) { return d.valueIndicator;})); //RETORNA OS VALORES PARA X
+          y.domain(dataInfo.map(function (d) { return d.param;})); //RETORNA OS ELEMENTOS DO EIXO Y
 
-          //console.log(dataInfo)
-          x.domain(
-            d3.extent(dataInfo, function (d) {
-              //console.log(d.valueIndicator)
-              return d.valueIndicator;
-            })
-          ); //RETORNA OS VALORES PARA X
-          y.domain(
-            dataInfo.map(function (d) {
-              //console.log(d.param)
-              return d.param;
-            })
-          ); //RETORNA OS ELEMENTOS DO EIXO Y
-
-          yAxis.tickPadding(x(eixoDefault) + 20); //POSICIONAMENTO DA ESCALA VERTICAL
-    
+          yAxis.tickPadding(x(eixoDefault) + 40); //POSICIONAMENTO DA ESCALA VERTICAL
           var bar = svg.selectAll(".bar").data(dataInfo);
 
-          // //POSICIONAMENTO DAS BARRAS
+          //POSICIONAMENTO DAS BARRAS
           bar
-            .enter()
-            .append("rect")
-            .attr("class", function (d) {
-             return "bar bar--" +  (d.valueIndicator < eixoDefault ? "negative" : "positive");
-            }) //VERIFICA SE O ELEMENTO É DA ESQUERDA OU DIREITA DO EIXO
-            .attr("x", function (d) {
-              // console.log("Default " + eixoDefault)
-              // console.log("Indicador " + d.valueIndicator)
-              // console.log(Math.min(eixoDefault, d.valueIndicator))
-              return x(Math.min(eixoDefault, d.valueIndicator));
-            })
-            .attr("y", function (d) {
-              return y(d.param);
-            })
-            .attr("width", function (d) {
-              
-              return Math.abs(x(d.valueIndicator) - x(eixoDefault));
-            }) //ONDE COMEÇA A DIVISÃO CENTRAL (EIXO)
-            .attr("height", y.bandwidth())
-            .on("mousemove", function (d) {
+          .enter().append("rect").attr("class", function (d) {return ("bar bar--"+(d.valueIndicator < eixoDefault ? (d.variation === "min" ? "negative" : "extra") : (d.variation === "min" ? "extra" :"positive")));}) //VERIFICA SE O ELEMENTO É DA ESQUERDA OU DIREITA DO EIXO
+          .attr("x", function (d) { return x(Math.min(eixoDefault, d.valueIndicator));})
+          .attr("y", function (d) { return y(d.param);})
+          .attr("width", function (d) { return Math.abs(x(d.valueIndicator) - x(eixoDefault));}) //ONDE COMEÇA A DIVISÃO CENTRAL (EIXO)
+          .attr("height", y.bandwidth())
+          .on("mousemove", function (d) {
               //ADICIONANDO TOOLTIP COM INFORMAÇÕES DA BARRA
               tooltip
-                .style("left", d3.event.pageX - 50 + "px")
-                .style("top", d3.event.pageY - 70 + "px")
-                .style("display", "inline-block")
-                .html(
-                  title +
-                    ": " +
-                    d.valueIndicator +
-                    "<br>" +
-                    d.param +
-                    ": " +
-                    d.valueParam
-                );
-            })
-            .on("mouseout", function () {
-              tooltip.style("display", "none");
-            }); //REMOVENDO TOOLTIP
+                .style("left", d3.event.pageX - 50 + "px").style("top", d3.event.pageY - 70 + "px")
+                .style("display", "inline-block").html(title +": " + d.valueIndicator + "<br>" + d.param + ": " + d.valueParam);})
+                .on("mouseout", function () {tooltip.style("display", "none");}); //REMOVENDO TOOLTIP
 
           //TEXTO EXTERNO REFERENTE AO INDICADOR
           bar
-            .enter()
-            .append("text")
-            .attr("text-anchor", "middle")
+            .enter().append("text").attr("text-anchor", "middle")
             .attr("x", function (d) {
               //VERIFICA SE É BARRA DA ESQUERDA OU DIREITA PARA POSICIONAR O RÓTULO
               return d.valueIndicator < eixoDefault
-                ? x(d.valueIndicator) - 10
+                ? x(d.valueIndicator) - 20
                 : x(Math.min(0, d.valueIndicator)) +
-                    (Math.abs(x(d.valueIndicator) - x(0)) + 10);
+                    (Math.abs(x(d.valueIndicator) - x(0)) + 20);
             })
-            .attr("y", function (d) {
-              //console.log(y(d.param) + (y.bandwidth() / 2));
-              return y(d.param) + y.bandwidth() / 2;
-            })
-            .attr("dy", ".35em")
-            .text(function (d) {
-              return d.valueIndicator.toFixed(2);
-            });
+            .attr("y", function (d) { return y(d.param) + y.bandwidth() / 2; })
+            .attr("dy", ".35em").text(function (d) { return d.valueIndicator.toFixed(2);});
 
           //TEXTO INTERNO REFERENTE AO PARÂMETRO
           bar
-            .enter()
-            .append("text")
-            .attr("text-anchor", "middle")
+            .enter().append("text").attr("text-anchor", "middle")
             .attr("class", "text-int")
             .attr("x", function (d) {
               //VERIFICA SE É BARRA DA ESQUERDA OU DIREITA PARA POSICIONAR O RÓTULO
               return d.valueIndicator < eixoDefault
-                ? x(d.valueIndicator) + 15
+                ? x(d.valueIndicator) + 20
                 : x(Math.min(0, d.valueIndicator)) +
-                    (Math.abs(x(d.valueIndicator) - x(0)) - 15);
+                    (Math.abs(x(d.valueIndicator) - x(0)) - 20);
             })
-            .attr("y", function (d) {
-              return y(d.param) + y.bandwidth() / 2;
-            })
-            .attr("dy", ".35em")
-            .text(function (d) {
-              return d.valueParam.toFixed(2);
-            }); //colocar aqui os valore dos parâmetros
+            .attr("y", function (d) { return y(d.param) + y.bandwidth() / 2;})
+            .attr("dy", ".35em").text(function (d) { return d.valueParam.toFixed(2);});
 
           svg
-            .append("g")
-            .attr("class", "x axis")
-            .attr("transform", "translate(0," + height + ")") //POSICIONAMENTO DA LINHA DO EIXO X
-            .call(xAxis)
-            .append("text")
-            .attr("x", 6)
-            .attr("dx", ".71em")
+            .append("g").attr("class", "x axis").attr("transform", "translate(0," + height + ")") //POSICIONAMENTO DA LINHA DO EIXO X
+            .call(xAxis).append("text").attr("x", 6).attr("dx", ".71em")
             .attr("transform", "translate(" + (x(eixoDefault) + 10) + ",40)") //POSICIONAMENTO DO EIXO CENTRAL
             .style("text-anchor", "end")
             .text(title);
 
           //EIXO CENTRAL
           svg
-            .append("g")
-            .attr("class", "y axis")
-            .attr("transform", "translate(" + x(eixoDefault) + ",0)") //POSICIONAMENTO DO EIXO CENTRAL
-            .call(yAxis)
-            .on("mousemove", function () {
+            .append("g").attr("class", "y axis").attr("transform", "translate(" + x(eixoDefault) + ",0)") //POSICIONAMENTO DO EIXO CENTRAL
+            .call(yAxis).on("mousemove", function () {
               //ADICIONANDO TOOLTIP COM INFORMAÇÕES DA BARRA
               tooltip
                 .style("left", d3.event.pageX - 50 + "px")
                 .style("top", d3.event.pageY - 70 + "px")
                 .style("display", "inline-block")
-                .html(
-                  "Eixo Central <br/> Valor Padrão do Indicador no Sistema <br/>" +
-                    title +
-                    ": " +
-                    eixoDefault
-                );
+                .html("Eixo Central <br/> Valor Padrão do Indicador no Sistema <br/>" + title + ": " + eixoDefault);
             })
             .on("mouseout", function () {
-              var delay = 2000; //1 seconds
+              var delay = 2000;
               setTimeout(function () {
                 tooltip.style("display", "none");
-                //your code to be executed after 1 seconds
               }, delay);
             }); //REMOVENDO TOOLTIP
 
           //EIXO AUXILIAR (VALOR PADRÃO)
           svg
             .append("g")
-            //.attr("class", "y axis")
-            //.attr("transform", "translate(" + x(126) + ",0)") //POSICIONAMENTO DO EIXO CENTRAL
-            //.call(yAxis)
             .append("line") //anexando uma linha
             .attr("class", "lineextra")
             .attr("stroke", "red") //COR DA LINHA
@@ -290,60 +212,22 @@ export default {
                 .style("left", d3.event.pageX - 50 + "px")
                 .style("top", d3.event.pageY - 70 + "px")
                 .style("display", "inline-block")
-                .html(
-                  "Eixo Auxiliar <br/> Valor Padrão do Indicador na Simulação <br/>" +
-                    title +
-                    ": " +
-                    eixoSimulation
-                );
+                .html("Eixo Auxiliar <br/> Valor Padrão do Indicador na Simulação <br/>" + title + ": " + eixoSimulation);
             })
             .on("mouseout", function () {
-              var delay = 2000; //1 seconds
+              var delay = 2000;
               setTimeout(function () {
                 tooltip.style("display", "none");
-                //your code to be executed after 1 seconds
               }, delay);
             }); //REMOVENDO TOOLTIP;
 
           //LEGENDA
-          svg
-            .append("circle")
-            .attr("cx", 0)
-            .attr("cy", 180)
-            .attr("r", 6)
-            .style("fill", "#007700");
-          svg
-            .append("circle")
-            .attr("cx", 90)
-            .attr("cy", 180)
-            .attr("r", 6)
-            .style("fill", "#0000FF");
-          svg
-            .append("line")
-            .attr("class", "lineextra") //COR DA LINHA
-            .attr("x1", "500") //INÍCIO DO X
-            .attr("y1", "180") //INÍCIO DO Y
-            .attr("x2", "510") //FIM DO X
-            .attr("y2", "180"); //FIM DO Y
-          svg
-            .append("text")
-            .attr("x", 10)
-            .attr("y", 180)
-            .text("Mínimo")
-            .style("font", "10px sans-serif")
-            .attr("alignment-baseline", "middle");
-          svg
-            .append("text")
-            .attr("x", 100)
-            .attr("y", 180)
-            .text("Máximo")
-            .style("font", "10px sans-serif")
-            .attr("alignment-baseline", "middle");
-          svg
-            .append("text")
-            .attr("x", 515)
-            .attr("y", 180)
-            .text("Valor padrão para o indicador na Simulação")
+          svg.append("circle").attr("cx", 0).attr("cy", 180).attr("r", 6).style("fill", "#007700");
+          svg.append("circle").attr("cx", 90).attr("cy", 180).attr("r", 6).style("fill", "#0000FF");
+          svg.append("line").attr("class", "lineextra").attr("x1", "500").attr("y1", "180").attr("x2", "510").attr("y2", "180"); 
+          svg.append("text").attr("x", 10).attr("y", 180).text("Mínimo").style("font", "10px sans-serif").attr("alignment-baseline", "middle");
+          svg.append("text").attr("x", 100).attr("y", 180).text("Máximo").style("font", "10px sans-serif").attr("alignment-baseline", "middle");
+          svg.append("text").attr("x", 515).attr("y", 180).text("Valor padrão para o indicador na Simulação")
             .style("font", "10px sans-serif")
             .attr("alignment-baseline", "middle");
         });
@@ -359,8 +243,9 @@ export default {
   fill: blue;
   z-index: 2;
 }
-.bar--positive:hover, .bar--negative:hover {
-  fill: #DDDDDD;
+.bar--positive:hover,
+.bar--negative:hover {
+  fill: #dddddd;
   border-color: black;
 }
 .bar--negative {

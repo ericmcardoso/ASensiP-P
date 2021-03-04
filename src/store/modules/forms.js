@@ -1,6 +1,7 @@
 import { memoize } from './../../helpers/Memoize';
-import { helpersimulation } from './../../helpers/HelpersSimulation';
+import { helpersimulation } from './../../helpers/Helpers';
 import  db  from './../dexiedb';
+import {dataPseudo} from './../../helpers/dataPseudo'
 
 export default {
   state: {
@@ -26,6 +27,7 @@ export default {
     SET_INDICATORSELECTED(state, indicador) {
       state.indicatorSelected = indicador
     },
+
 
     SET_PARAMETERS(state, parameters) {
       state.parameters = parameters
@@ -89,21 +91,6 @@ export default {
       await commit('SET_DEFAULT', paramsDefault)
       await commit('SET_SELECIONADO', paramsDefault)
 
-      // let dados = state.dadosGerais.find( dados => dados.name === state.indicatorSelected );
-      // if (dados.parameters.defaultParameters[0] != "(nenhum)") {
-      //   dados.parameters.defaultParameters.forEach(function (p) {
-      //     parameters.push(p);
-      //     paramsDefault.push(p);
-      //   });
-      //   dados.parameters.otherParameters.forEach(function (p) {
-      //     parameters.push(p);
-      //   });
-      // }else{
-      //   dados.parameters.otherParameters.forEach(function (p) {
-      //     parameters.push(p);
-      //   });
-      // }
-
     },
 
     //BUSCA LISTA DE INDICADORES DE UM DETERMINADO SISTEMA
@@ -111,11 +98,7 @@ export default {
       let indicators = [];
       //dados contém a simulação
       let dados = await db.searchIndicators(state.idSystem)
-      //console.log(dados)
-      // for(var i=0; i<dados.length; i++){
-      //   indicators.push(dados[i].name)
-      //   console.log(dados[i].name)
-      // }
+    
       for(var prop in dados.simulationData.indicatorParameters){
         indicators.push(prop)
       }
@@ -148,7 +131,7 @@ export default {
 
             //para gráficos do sistema, os valores do parâmetros não analisados são os padrões
             //função que altera no JSON PADRÃO o valor dos parâmetros para os valores padrões
-            await helpersimulation.updateParameters(Simulation)
+            //await helpersimulation.updateParameters(Simulation)
             //chamada à função de cálculo da análise de sensibilidade com retorno dos valores para o indicador naquele parâmetro
             let valueIndicators = await memoize.calculation(Simulation, form.type, state.indicatorSelected, state.pSelected[i])
 
@@ -166,7 +149,7 @@ export default {
 
         } else {
 
-          await helpersimulation.updateParameters(Simulation);
+          //await helpersimulation.updateParameters(Simulation);
           //chamada à função de cálculo da análise de sensibilidade com retorno dos valores para o indicador naquele parâmetro
           let valueIndicators = await memoize.calculation(Simulation, form.type, state.indicatorSelected, state.pSelected)
 
@@ -228,8 +211,8 @@ export default {
           let tornadoFinal = {}
           tornadoFinal = {
             "titleTornado": state.indicatorSelected + " - Sistema",
-            "default": 78, //Valor Padrão na Simulação
-            "defaultSystem": 100, //valor padrão para o Sistema
+            "default": dataPseudo[state.indicatorSelected].simulation, //Valor Padrão na Simulação
+            "defaultSystem": dataPseudo[state.indicatorSelected].system, //valor padrão para o Sistema
             "indicator": state.indicatorSelected,
             "parameters": state.pSelected,
             "dadosInfo": {
@@ -239,15 +222,24 @@ export default {
           commit('SET_TORNADOSYSTEM', tornadoFinal)
         }else if(dataGraph.model == "xy"){
           let xyFinal = {}
+          let xSys, xSim
+          
+          dataGraph.dataGraph.forEach(function(element){
+            if(parseInt(element.yField) == dataPseudo[state.indicatorSelected].system)
+              xSys= element.xField
+            if(parseInt(element.yField) == dataPseudo[state.indicatorSelected].simulation)
+              xSim = element.xField            
+          })
+          
           xyFinal = {
             "titleLine": state.indicatorSelected + " X " + state.pSelected,
             "legendLineX": state.pSelected,
             "legendLineY": state.indicatorSelected,
             "dadosLine": dataGraph.dataGraph,
-            "defaultSimulation": [40, 108], //mudar valores fixos
-            "defaultSystem": [70, 107]
-          }
+            "defaultSimulation": [xSim, dataPseudo[state.indicatorSelected].simulation], //parâmetro / indicador
+            "defaultSystem": [xSys, dataPseudo[state.indicatorSelected].system] //parâmetro / indicador
           // console.log(xyFinal)
+          }
           commit('SET_LINECHART', xyFinal)
         }else{
           let histogramaFinal = {}
@@ -258,7 +250,7 @@ export default {
             "legendXBar": state.indicatorSelected,
             "legendYBar": "Probabilidade",
             "dadosBar": dataGraph.dataGraph,
-            "eixo": 120, //mudar valores fixos
+            "eixo": dataPseudo[state.indicatorSelected].system, //mudar valores fixos
           }
          // console.log("Final "histogramaFinal)
           commit('SET_BARCHART', histogramaFinal)
@@ -268,8 +260,8 @@ export default {
 
         tornadoFinal = {
           "titleTornado": state.indicatorSelected + " - Simulação",
-          "default": 100, //Valor Padrão na Simulação
-          "defaultSystem": 102, //valor padrão para o Sistema
+          "default": dataPseudo[state.indicatorSelected].simulation, //Valor Padrão na Simulação
+          "defaultSystem": dataPseudo[state.indicatorSelected].system, //valor padrão para o Sistema
           "indicator": state.indicatorSelected,
           "parameters": state.pSelected,
           "dadosInfo": {

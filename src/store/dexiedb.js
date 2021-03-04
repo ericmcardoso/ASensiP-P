@@ -6,7 +6,6 @@ const db_name = "Teste"
 //tabelas padrões IDB
 const db_name1 = "IndicatorParameter"
 const db_name2 = "Simulation"
-const db_name3 = "RelationDB"
 
 const db_version = 1
 
@@ -34,12 +33,6 @@ export default {
                 db = new Dexie(db_name2); //JSON do Sistema Analisado
                 db.version(db_version).stores({
                     Simulation: '++id, idModel, idSimulation, idSystem, resultQuery, simulationData'
-                })
-                break;
-            case 3:
-                db = new Dexie(db_name3); //BD de Relações Indicador Parâmetro
-                db.version(db_version).stores({
-                    Relationship: '++id, idSystem, name, parameters'
                 })
                 break;
 
@@ -139,19 +132,6 @@ export default {
         });
 
         return v
-
-        //IMPLEMENTAÇÃO COM RELATIONSHIP SEPARADO
-        // let db = this.connect(3)
-        // let v = []
-        // await db.transaction('r', db.Relationship, function () {
-        //     return db.Relationship.where({
-        //         idSystem: System
-        //     }).each(dados => v.push(dados))
-        // }).catch(function (e) {
-        //     console.error("Erro na transação " + e.stack);
-        // });
-
-        // return v
 
     },
 

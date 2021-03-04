@@ -35,7 +35,7 @@
 </template>
 
 <script>
-import Volta from './forms/VoltarSistema.vue'
+import Volta from './forms/BackSystem.vue'
 import { mapActions } from 'vuex'
 export default {
     components: {Volta},

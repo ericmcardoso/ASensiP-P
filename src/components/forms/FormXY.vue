@@ -34,9 +34,9 @@
 </template>
 
 <script>
-import Indicador from './Indicador.vue'
-import Parametro from './ParametroUnico.vue'
-import Volta from './VoltarForm.vue'
+import Indicador from './Indicator.vue'
+import Parametro from './UniqueParameter.vue'
+import Volta from './BackForm.vue'
 import { mapActions } from 'vuex'
 
 export default {
@@ -49,6 +49,7 @@ export default {
   },
   created () {
      this.getIndicators()
+     this.$store.commit("SET_LINECHART", "")
   },
   data() {
     return {
