@@ -7,6 +7,31 @@
           <h1>Histograma</h1>
           <hr />
         </v-col>
+
+         <v-col cols="11" class="text-center">
+          <!-- Caixa de dialogo -->
+          <v-dialog v-model="dialog" max-width="900">
+            <v-card>
+              <v-img
+                src="@/img/legenda-histograma.jpg"
+                aspect-ratio="2"
+                contain
+              ></v-img>
+            </v-card>
+          </v-dialog>
+        </v-col>
+        <v-col cols="1" class="text-center">
+          <v-btn
+            class="help"
+            color="primary"
+            fab
+            dark
+            @mouseover.stop="dialog = true"
+            @mouseleave.stop="dialog = false"
+            >?</v-btn
+          >
+        </v-col>
+
         <v-col cols="12" class="text-center">
           <h3>{{ titleBar }}</h3>
         </v-col>
@@ -42,6 +67,7 @@ export default {
     },
   },
   data: () => ({
+    dialog: false,
     loaded: true
   }),
   mounted(){
@@ -75,7 +101,7 @@ export default {
         .attr("height", height + 200 + margin.top + margin.bottom)
         .attr("width", width + 50 + margin.left + margin.right);
 
-      const chart = svg.append("g").attr("transform", `translate(50, 5)`);
+      const chart = svg.append("g").attr("transform", `translate(50, 50)`);
 
       const xAxis = d3
         .scaleBand()
@@ -88,12 +114,13 @@ export default {
         .padding(0.03);
 
       var teste = d3.extent(this.dados, function (d) {
-        return d.yField;
+        return Number(d.yField);
       });
+
       const yAxis = d3
         .scaleLinear()
         .range([height, 0])
-        .domain([0, teste[1] + 5]);
+        .domain([0, teste[1] + 3]);
 
       chart.append("g").call(d3.axisLeft(yAxis));
 

@@ -60,15 +60,20 @@ export const memoize = {
                         Simulation.simulationData.parameters[parameter] = controle //altera o valor do parâmetro para a simulação
                         let vIndicator = await db.searchData({"indicator": indicator, "parameter": parameter, "valueParameter": controle}, type)
                         
-                        if (vIndicator != undefined) {
-                            //PASSO 2: SE EXISTE O VALOR, RETORNA
-                            console.log("Existe.. ")
-                            this.valueIndicators.push(vIndicator.valueindicator)
-                        } else {
-                            //PASSO 3: SE NÃO EXISTE O VALOR, CHAMA A FUNÇAO DE CÁLCULO 
-                            console.log("Calculando...")
-                            this.valueIndicators.push(this._calculate(Simulation, type, indicator, parameter, controle))
+                        if(l == 2){ //valor da simulação
+                            this.valueIndicators.push(dataPseudo[indicator].simulation)
+                        }else{
+                            if (vIndicator != undefined) {
+                                //PASSO 2: SE EXISTE O VALOR, RETORNA
+                                console.log("Existe.. ")
+                                this.valueIndicators.push(vIndicator.valueindicator)
+                            } else {
+                                //PASSO 3: SE NÃO EXISTE O VALOR, CHAMA A FUNÇAO DE CÁLCULO 
+                                console.log("Calculando...")
+                                this.valueIndicators.push(this._calculate(Simulation, type, indicator, parameter, controle))
+                            }
                         }
+                        
                         controle += d; //incrementa o valor a ser analisado do parâmetro
                     }
                 }

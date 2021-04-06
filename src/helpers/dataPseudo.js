@@ -1,7 +1,7 @@
 export const dataPseudo = {
     "Lucratividade (R$/ha/ano)": {
         "system": 100,
-        "simulation": 110,
+        "simulation": 103,
         "vymin": 0.07321313,
         "vymax": 0.968487626
     },

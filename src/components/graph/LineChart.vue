@@ -7,6 +7,31 @@
           <h1>Gráfico Indicador x Parâmetro</h1>
           <hr />
         </v-col>
+
+         <v-col cols="11" class="text-center">
+          <!-- Caixa de dialogo -->
+          <v-dialog v-model="dialog" max-width="900">
+            <v-card>
+              <v-img
+                src="@/img/legenda-xy.jpg"
+                aspect-ratio="2"
+                contain
+              ></v-img>
+            </v-card>
+          </v-dialog>
+        </v-col>
+        <v-col cols="1" class="text-center">
+          <v-btn
+            class="help"
+            color="primary"
+            fab
+            dark
+            @mouseover.stop="dialog = true"
+            @mouseleave.stop="dialog = false"
+            >?</v-btn
+          >
+        </v-col>
+
         <v-col cols="12" class="text-center">
           <h3>{{ titleLine }}</h3>
         </v-col>
@@ -48,6 +73,7 @@ export default {
     },
   },
   data: () => ({
+    dialog: false,
     loaded: true
   }),
   mounted(){
@@ -71,7 +97,6 @@ export default {
         //width = 1100 - margin.left - margin.right,
         height = 470 - margin.top - margin.bottom;
 
-        console.log(width)
       var tooltip = d3.select("body").append("div").attr("class", "toolTip");
 
       const svg = d3
@@ -98,12 +123,13 @@ export default {
           })
         ]          
         )
-        .range([inicioX, width]);
+        .range([0, width])
+      
 
       //LEGENDA EIXO X
       chart
         .append("g")
-        .attr("transform", "translate(-13," + height + ")")
+        .attr("transform", "translate(0," + height + ")")
         .call(d3.axisBottom(x))
         .selectAll("text")
         .style("text-anchor", "end")
@@ -128,12 +154,7 @@ export default {
         .attr(
           "transform",
           "translate(" +
-            Math.min.apply(
-              Math,
-              this.dados.map(function (d) {
-                return d.xField;
-              })
-            ) +
+            0 +
             ",0)"
         )
         .call(d3.axisLeft(y));
@@ -255,7 +276,7 @@ export default {
         .append("text")
         .attr("x", 6)
         .attr("dx", ".71em")
-        .attr("transform", "translate(" + (inicioX - 50) + ",40)  rotate(-90)")
+        .attr("transform", "translate(" + (0 - 50) + ",40)  rotate(-90)")
         .style("text-anchor", "end")
         .text(this.$store.state.graph.LineChart.legendLineY);
     },

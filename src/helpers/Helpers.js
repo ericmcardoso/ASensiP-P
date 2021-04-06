@@ -46,33 +46,65 @@ export const helpersimulation = {
     });
     return xy;
   },
-  setParametersHistogram(valueIndicators, min, d) {
+  setParametersHistogram(y) {
 
-    let prob = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+    //var histogram;
+    var ncols = 20
+    var xstd = 15
+    var triang = []
+    var prob = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    var hist = []
 
-    let histograma = []
-    let controle;
-    valueIndicators.forEach(function (item) {
-      controle = min;
-      for (let i = 0; i < 20; i++) { //percorre todas as possibilidades
-        if (item >= controle && item < (controle + d)) { //está no intervalo
-          prob[i] += 1;
-        }
-        controle += d
-      }
+    //histogram = (y, xstd, ncol) => {
+    var c, i, j, k, l, ref, ref1, ref2, ref3, ref4, x, ygap, ymax, ymin, total;
+    // y: array com os valores calculados para o Indicador, para um Parâmetro variando de seu valor min (tendo como resultado o valor y[0] para o Indicador),
+    // e indo até o valor max do Parâmetro (dando como resultado o valor y[y.length-1] para o Indicador).
+    // xstd: posição de y que corresponde ao valor do Parâmetro mais próximo do valor std. Usa-se o mais próximo porque os valores de Parâmetros 
+    // usados para montar y[] estão igualmente espaçados, de modo que o valor std exato pode não ter sido usado para compor y[]
+    // ncol: número de colunas que se quer montar no histograma.
 
-    });
-    //ao final tenho a quantidade de valores em cada intervalo
-    controle = min;
-    for (let i = 0; i < 20; i++) { //percorre todas as possibilidades
-      histograma.push({
-        "yField": prob[i],
-        "xField": controle.toFixed(2)
-      });
-      controle += d
+    // O máximo da distribuição triangular ocorre no valor std do Parâmetro, aproximado para a posição xstd
+    // e a área do triângulo dá a probalidade total, i.e., 1, logo, usando a fórmula da área do triângulo para calcular a sua altura em xstd: 
+    triang[xstd] = 2 / y.length;
+    // Para calcular a distribuição triangular do lado esquerdo, usamos a equação de reta ascendente começando em zero e indo até triang[xtsd]:
+    for (x = i = 0, ref = xstd - 1; (0 <= ref ? i <= ref : i >= ref); x = 0 <= ref ? ++i : --i) {
+      triang[x] = triang[xstd] * x / xstd;
     }
 
-    return histograma
+    // Para calcular a distribuição triangular do lado direito, usamos a equação de reta descendente começando em triang[xtsd] e indo até zero:
+    for (x = j = ref1 = xstd + 1, ref2 = y.length - 1; (ref1 <= ref2 ? j <= ref2 : j >= ref2); x = ref1 <= ref2 ? ++j : --j) {
+      triang[x] = triang[xstd] - triang[xstd] * (x - xstd) / (y.length - 1 - xstd);
+    }
+
+    // Encontra o menor e maior valores de y.
+    ymin = Math.min(...y);
+    ymax = Math.max(...y);
+
+    // Define a largura das colunas de probabilidade.
+    ygap = (ymax - ymin) / ncols;
+    // Acumula as probabilidades de y em colunas
+    for (x = k = 0, ref3 = y.length - 1; (0 <= ref3 ? k <= ref3 : k >= ref3); x = 0 <= ref3 ? ++k : --k) {
+      // Descobre em que coluna y[x] deve cair
+      c = Math.floor((y[x] - ymin) / ygap);
+      // Na coluna do histograma em que y[x] caiu, acumula a probabilidade triagular do valor do Parâmetro que corresponde ao valor de y. 
+      if (c < ncols)
+        prob[c] += triang[x];
+    }
+    // Ajusta as probabilidades para que o total seja 1 e salva pares com o centro da faixa de valores de y e a probabilidade respectiva.
+    total = 0
+    for (i = 0; i < prob.length; i++) {
+      total += prob[i];
+    }
+
+    for (c = l = 0, ref4 = ncols - 1; (0 <= ref4 ? l <= ref4 : l >= ref4); c = 0 <= ref4 ? ++l : --l) {
+      let v = ymin + (c + 1) * ygap / 2
+      let p = (prob[c] / total) * 100
+      hist.push({
+        "yField": p.toFixed(3),
+        "xField": v.toFixed(2)
+      });
+    }
+    return hist;   
 
   },
 
